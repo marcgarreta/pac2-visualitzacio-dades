@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Espanya: PIB vs Esperança de Vida</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<style>
+  body {
+    font-family: sans-serif;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+  }
+  h1 { font-size: 20px; margin-bottom: 4px; }
+  p  { font-size: 13px; color: #666; margin-bottom: 24px; }
+  .dot { cursor: pointer; }
+  .label { font-size: 11px; fill: #333; }
+  .axis text { font-size: 11px; }
+  .tooltip {
+    position: absolute;
+    background: #fff;
+    border: 1px solid #ccc;
+    padding: 8px 12px;
+    font-size: 12px;
+    pointer-events: none;
+    opacity: 0;
+    border-radius: 4px;
+  }
+</style>
+</head>
+<body>
+
+<h1>PIB per càpita vs Esperança de Vida — Espanya (1990–2022)</h1>
+<p>Cada punt és un any. La línia connecta la trajectòria temporal. Font: Our World in Data / World Bank.</p>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+const data = [
+  { year: 1990, gdp: 16089, le: 76.9 },
+  { year: 1991, gdp: 16241, le: 77.1 },
+  { year: 1992, gdp: 16118, le: 77.4 },
+  { year: 1993, gdp: 15671, le: 77.5 },
+  { year: 1994, gdp: 16043, le: 77.8 },
+  { year: 1995, gdp: 16527, le: 78.1 },
+  { year: 1996, gdp: 17050, le: 78.4 },
+  { year: 1997, gdp: 17802, le: 78.6 },
+  { year: 1998, gdp: 18600, le: 78.8 },
+  { year: 1999, gdp: 19420, le: 79.0 },
+  { year: 2000, gdp: 20210, le: 79.3 },
+  { year: 2001, gdp: 20790, le: 79.5 },
+  { year: 2002, gdp: 21250, le: 79.8 },
+  { year: 2003, gdp: 21810, le: 80.1 },
+  { year: 2004, gdp: 22550, le: 80.4 },
+  { year: 2005, gdp: 23200, le: 80.7 },
+  { year: 2006, gdp: 24100, le: 81.0 },
+  { year: 2007, gdp: 24760, le: 81.4 },
+  { year: 2008, gdp: 24310, le: 81.5 },
+  { year: 2009, gdp: 23020, le: 81.8 },
+  { year: 2010, gdp: 23050, le: 82.1 },
+  { year: 2011, gdp: 22830, le: 82.3 },
+  { year: 2012, gdp: 22080, le: 82.5 },
+  { year: 2013, gdp: 21920, le: 82.7 },
+  { year: 2014, gdp: 22560, le: 83.0 },
+  { year: 2015, gdp: 23490, le: 83.0 },
+  { year: 2016, gdp: 24180, le: 83.2 },
+  { year: 2017, gdp: 25030, le: 83.4 },
+  { year: 2018, gdp: 25820, le: 83.5 },
+  { year: 2019, gdp: 26310, le: 83.6 },
+  { year: 2020, gdp: 23080, le: 82.4 },
+  { year: 2021, gdp: 24610, le: 82.9 },
+  { year: 2022, gdp: 25900, le: 83.2 },
+];
+
+const labelYears  = new Set([1990, 2000, 2007, 2008, 2013, 2019, 2020, 2022]);
+const crisisYears = new Set([2008, 2009, 2010, 2011, 2012, 2013, 2020]);
+
+const margin = { top: 20, right: 40, bottom: 50, left: 60 };
+const width  = 680 - margin.left - margin.right;
+const height = 420 - margin.top  - margin.bottom;
+
+const svg = d3.select('body').append('svg')
+  .attr('width',  width  + margin.left + margin.right)
+  .attr('height', height + margin.top  + margin.bottom)
+  .append('g')
+  .attr('transform', `translate(${margin.left},${margin.top})`);
+
+const x = d3.scaleLinear().domain([15000, 27500]).range([0, width]);
+const y = d3.scaleLinear().domain([76, 84.5]).range([height, 0]);
+
+// Axes
+svg.append('g').attr('transform', `translate(0,${height})`).call(
+  d3.axisBottom(x).ticks(6).tickFormat(d => `$${d/1000}k`)
+);
+svg.append('g').call(
+  d3.axisLeft(y).ticks(6).tickFormat(d => `${d} a`)
+);
+
+// Axis labels
+svg.append('text')
+  .attr('x', width / 2).attr('y', height + 42)
+  .attr('text-anchor', 'middle').attr('font-size', 12).attr('fill', '#555')
+  .text('PIB per càpita (USD constants 2015)');
+
+svg.append('text')
+  .attr('transform', 'rotate(-90)')
+  .attr('x', -height / 2).attr('y', -45)
+  .attr('text-anchor', 'middle').attr('font-size', 12).attr('fill', '#555')
+  .text('Esperança de vida (anys)');
+
+// Line
+const line = d3.line().x(d => x(d.gdp)).y(d => y(d.le)).curve(d3.curveCatmullRom);
+svg.append('path')
+  .datum(data)
+  .attr('fill', 'none')
+  .attr('stroke', '#4a90d9')
+  .attr('stroke-width', 1.8)
+  .attr('d', line);
+
+// Tooltip
+const tooltip = document.getElementById('tooltip');
+
+// Dots
+svg.selectAll('.dot')
+  .data(data)
+  .join('circle')
+  .attr('class', 'dot')
+  .attr('cx', d => x(d.gdp))
+  .attr('cy', d => y(d.le))
+  .attr('r', 4)
+  .attr('fill', d => crisisYears.has(d.year) ? '#e74c3c' : '#4a90d9')
+  .attr('stroke', '#fff')
+  .attr('stroke-width', 1.5)
+  .on('mouseover', (event, d) => {
+    tooltip.style.opacity = 1;
+    tooltip.innerHTML = `<strong>${d.year}</strong><br>PIB: $${d.gdp.toLocaleString()}<br>Esp. vida: ${d.le} anys`;
+  })
+  .on('mousemove', event => {
+    tooltip.style.left = (event.pageX + 12) + 'px';
+    tooltip.style.top  = (event.pageY - 28) + 'px';
+  })
+  .on('mouseout', () => { tooltip.style.opacity = 0; });
+
+// Custom offsets per year to avoid overlaps with the line
+// [dx, dy, anchor]
+const labelOffsets = {
+  1990: [-8,  14, 'middle'],   // below
+  2000: [ 8, -10, 'start'],    // above-right
+  2007: [10,  -8, 'start'],    // above-right
+  2008: [-8,  14, 'end'],      // below-left (crisi, just below 2007)
+  2013: [-10,  0, 'end'],      // left
+  2019: [ 10, -8, 'start'],    // above-right
+  2020: [-10, 12, 'end'],      // below-left
+  2022: [ 10,  0, 'start'],    // right
+};
+
+const labelData = data.filter(d => labelYears.has(d.year));
+
+// White background rect behind each label for legibility
+labelData.forEach(d => {
+  const [dx, dy, anchor] = labelOffsets[d.year];
+  const lx = x(d.gdp) + dx;
+  const ly = y(d.le)  + dy;
+  svg.append('rect')
+    .attr('x',      anchor === 'end' ? lx - 30 : anchor === 'middle' ? lx - 15 : lx - 2)
+    .attr('y',      ly - 11)
+    .attr('width',  32)
+    .attr('height', 14)
+    .attr('fill',   '#fff')
+    .attr('opacity', 0.85);
+});
+
+// Labels
+svg.selectAll('.label')
+  .data(labelData)
+  .join('text')
+  .attr('class', 'label')
+  .attr('x', d => x(d.gdp) + labelOffsets[d.year][0])
+  .attr('y', d => y(d.le)  + labelOffsets[d.year][1])
+  .attr('text-anchor', d => labelOffsets[d.year][2])
+  .attr('fill', d => crisisYears.has(d.year) ? '#e74c3c' : '#333')
+  .attr('font-weight', d => crisisYears.has(d.year) ? 'bold' : 'normal')
+  .text(d => d.year);
+</script>
+</body>
+</html>
