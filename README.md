@@ -14,7 +14,7 @@ per volum de passatgers (AENA 2023).
 
 ## Visualització en línia
 
-👉 [Veure la visualització](https://[el-teu-usuari].github.io/pac2-visualitzacio-dades/)
+👉 [Veure la visualització]([https://[el-teu-usuari].github.io/pac2-visualitzacio-dades/](https://marcgarreta.github.io/pac2-visualitzacio-dades/))
 
 ## Reproduir localment
 
