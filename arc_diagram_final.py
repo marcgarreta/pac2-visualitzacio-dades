@@ -7,7 +7,6 @@ import numpy as np
 import networkx as nx
 from collections import defaultdict
 
-# ── Dades ─────────────────────────────────────────────────────────────────────
 routes = [
     ("Madrid","Barcelona",4200000),  ("Madrid","Palma",3800000),
     ("Madrid","Malaga",2900000),     ("Madrid","Gran Canaria",2600000),
@@ -33,7 +32,6 @@ routes = [
     ("Bilbao","Palma",300000),       ("Malaga","Gran Canaria",500000),
 ]
 
-# ── Grups i colors ─────────────────────────────────────────────────────────────
 groups = {
     "Madrid":"Hub principal",    "Barcelona":"Hub principal",
     "Palma":"Illes Balears",     "Ibiza":"Illes Balears",    "Menorca":"Illes Balears",
@@ -54,7 +52,6 @@ palette = {
     "Altres":"#A8DADC",
 }
 
-# ── Ordenar nodes per connexions ───────────────────────────────────────────────
 conn = defaultdict(int)
 for s, t, v in routes:
     conn[s] += 1
@@ -64,10 +61,10 @@ all_nodes = sorted(conn.keys(), key=lambda x: -conn[x])
 n = len(all_nodes)
 node_idx = {node: i for i, node in enumerate(all_nodes)}
 
-# ── Posicions X equidistants ───────────────────────────────────────────────────
+# Posicions X equidistants 
 xs = {node: i / (n - 1) for i, node in enumerate(all_nodes)}
 
-# ── Normalitzar gruix dels arcs ────────────────────────────────────────────────
+# Normalitzar gruix dels arcs 
 max_v = max(v for _, _, v in routes)
 min_v = min(v for _, _, v in routes)
 
@@ -77,7 +74,6 @@ def lw(v, lo=0.4, hi=8.0):
 def alpha_arc(v, lo=0.25, hi=0.80):
     return lo + (v - min_v) / (max_v - min_v) * (hi - lo)
 
-# ── Figure ─────────────────────────────────────────────────────────────────────
 BG    = "#0d1117"
 PANEL = "#161b27"
 
@@ -90,12 +86,11 @@ ax.axis('off')
 
 Y_BASE = 0.0   # línia base dels nodes
 
-# ── Dibuixar arcs ──────────────────────────────────────────────────────────────
+# Dibuixar els arcs
 for s, t, v in routes:
     x0, x1 = xs[s], xs[t]
     xm = (x0 + x1) / 2
     dist = abs(x1 - x0)
-    # Alçada proporcional a la distància (arc natural)
     h = (dist ** 0.6) * 0.85
 
     color = palette[groups.get(s, "Altres")]
@@ -111,7 +106,7 @@ for s, t, v in routes:
             solid_capstyle='round',
             zorder=1)
 
-# ── Dibuixar nodes ─────────────────────────────────────────────────────────────
+# Dibuixar els nodes
 for node in all_nodes:
     x   = xs[node]
     grp = groups.get(node, "Altres")
@@ -119,7 +114,6 @@ for node in all_nodes:
     ax.scatter(x, Y_BASE, s=180, color=c, zorder=5,
                edgecolors='#0d1117', linewidths=1.8)
 
-# ── Labels dels nodes (rotats 45°) ────────────────────────────────────────────
 for node in all_nodes:
     x = xs[node]
     ax.text(x, Y_BASE - 0.025, node,
@@ -130,7 +124,6 @@ for node in all_nodes:
             rotation_mode='anchor',
             transform=ax.transData)
 
-# ── Títol ──────────────────────────────────────────────────────────────────────
 fig.text(0.5, 0.96,
          "Rutes Aèries Domèstiques a Espanya",
          ha='center', va='top',
@@ -142,7 +135,6 @@ fig.text(0.5, 0.925,
          ha='center', va='top',
          fontsize=11, color='#64748b', linespacing=1.6)
 
-# ── Llegenda ───────────────────────────────────────────────────────────────────
 legend_handles = [
     mpatches.Patch(color=c, label=g)
     for g, c in palette.items()
@@ -162,13 +154,11 @@ legend = fig.legend(
     handleheight=0.9,
 )
 
-# ── Peu de pàgina ──────────────────────────────────────────────────────────────
 fig.text(0.5, 0.005,
          "Font: AENA — Estadístiques de tràfic aeri 2023  ·  PAC 2 · Visualització de Dades · MUCD · UOC",
          ha='center', va='bottom',
          fontsize=8.5, color='#374151')
 
-# ── Guardar ────────────────────────────────────────────────────────────────────
 out = "arc_diagram_espanya.png"
 plt.savefig(out, dpi=180, bbox_inches='tight', facecolor=BG)
 print(f"✅ Guardat: {out}")
