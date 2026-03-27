@@ -14,14 +14,14 @@ per volum de passatgers (AENA 2023).
 
 ## Visualització en línia
 
-👉 [Veure la visualització](https://[el-teu-usuari].github.io/pac2-visualitzacio/)
+👉 [Veure la visualització](https://[el-teu-usuari].github.io/pac2-visualitzacio-dades/)
 
 ## Reproduir localment
 
 ### 1. Clona el repositori
 ```bash
 git clone https://github.com/[el-teu-usuari]/pac2-visualitzacio.git
-cd pac2-visualitzacio
+cd pac2-visualitzacio-dades
 ```
 
 ### 2. Crea un entorn virtual (recomanat)
